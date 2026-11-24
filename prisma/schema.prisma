@@ -1,0 +1,135 @@
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Customer {
+  id        String   @id
+  name      String
+  phone     String
+  email     String?
+  dob       String?
+  gender    String?
+  address   String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // A customer can have multiple eye examinations.
+  eyeExaminations EyeExamination[]
+  prescriptions   Prescription[]
+
+  @@index([name])
+  @@index([phone])
+}
+
+model EyeExamination {
+  id         String   @id
+  customerId String
+
+  // Examination details
+  examinationDate DateTime @default(now())
+  examinedBy      String?
+  chiefComplaints String?
+
+  // Visual acuity - Right Eye (OD)
+  unaidedVisionRight   String?
+  correctedVisionRight String?
+  pinholeVisionRight   String?
+  finalVisionRight     String?
+
+  // Visual acuity - Left Eye (OS)
+  unaidedVisionLeft   String?
+  correctedVisionLeft String?
+  pinholeVisionLeft   String?
+  finalVisionLeft     String?
+
+  // Refraction - Right Eye (OD)
+  sphRight  Float?
+  cylRight  Float?
+  axisRight Int?
+  addRight  Float?
+
+  // Refraction - Left Eye (OS)
+  sphLeft  Float?
+  cylLeft  Float?
+  axisLeft Int?
+  addLeft  Float?
+
+  // Additional measurements
+  pdDistance Float?
+  pdNear     Float?
+  iopRight   Float?
+  iopLeft    Float?
+  nearVisionRight String?
+  nearVisionLeft  String?
+
+  // Clinical notes
+  examinationFindings String?
+  recommendations     String?
+  followUpDate        DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Customer relationship
+ customer Customer @relation(fields: [customerId], references: [id], onDelete: Restrict)
+
+ prescriptions Prescription[]
+
+  @@index([customerId])
+  @@index([examinationDate])
+}
+model Prescription {
+  id         String @id
+  customerId String
+
+  // IN_HOUSE or EXTERNAL
+  source String
+
+  // Optional eye examination link
+  examinationId String?
+
+  // Doctor / Examiner details
+  doctorName String?
+  clinicName String?
+
+  // Prescription dates
+  prescriptionDate DateTime @default(now())
+  expiryDate       DateTime?
+
+  // Right Eye (OD)
+  sphRight  Float?
+  cylRight  Float?
+  axisRight Int?
+  addRight  Float?
+
+  // Left Eye (OS)
+  sphLeft  Float?
+  cylLeft  Float?
+  axisLeft Int?
+  addLeft  Float?
+
+  // Pupillary Distance
+  pdDistance Float?
+  pdNear     Float?
+
+  // Notes
+  notes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  customer    Customer       @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  examination EyeExamination? @relation(fields: [examinationId], references: [id], onDelete: SetNull)
+
+  @@index([customerId])
+  @@index([examinationId])
+  @@index([prescriptionDate])
+}
